@@ -3,7 +3,7 @@ import React from "react";
 
 const page = async () => {
   await requireAuth();
-  return <div>WorkFlow Page</div>;
+  return <div>Executions</div>;
 };
 
 export default page;
