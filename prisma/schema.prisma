@@ -94,6 +94,9 @@ enum CredentialType {
   OPENAI
   ANTHROPIC
   GEMINI
+  SLACK
+  DISCORD
+  HTTP_BEARER
 }
 
 model Workflow {
@@ -102,9 +105,13 @@ model Workflow {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  errorWorkflowId String?
+  settings        Json?
+
   nodes       Node[]
   connections Connection[]
   executions  Execution[]
+  webhookEndpoints WebhookEndpoint[]
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -113,6 +120,8 @@ model Workflow {
 enum NodeType {
   INITIAL
   MANUAL_TRIGGER
+  WEBHOOK_TRIGGER
+  SCHEDULE_TRIGGER
   HTTP_REQUEST
   GOOGLE_FORM_TRIGGER
   STRIPE_TRIGGER
@@ -121,6 +130,25 @@ enum NodeType {
   OPENAI
   DISCORD
   SLACK
+  TRANSFORM_JSON
+  EXTRACT_FIELD
+  CONDITION
+  DELAY
+  SWITCH
+  MERGE
+  WAIT
+  LOOP
+  ERROR_TRIGGER
+  EXECUTE_WORKFLOW
+  EXECUTE_SUBWORKFLOW_TRIGGER
+  RESPOND_TO_WEBHOOK
+  SORT
+  LIMIT
+  REMOVE_DUPLICATES
+  SPLIT_OUT
+  SUMMARIZE
+  AGGREGATE
+  REMOVE_EMPTY
 }
 
 model Node {
@@ -133,11 +161,20 @@ model Node {
   position Json
   data     Json     @default("{}")
 
+  disabled         Boolean  @default(false)
+  onError          String   @default("STOP_WORKFLOW")
+  retryOnFail      Boolean  @default(false)
+  maxTries         Int      @default(3)
+  waitBetweenTries Int      @default(1000)
+  alwaysOutputData Boolean  @default(false)
+  notes            String?
+
   credentialId String?
-  credential   Credential? @relation(fields: [credentialId], references: [id])
+  credential   Credential? @relation(fields: [credentialId], references: [id], onDelete: SetNull)
 
   outputConnections Connection[] @relation("FromNode")
   inputConnections  Connection[] @relation("ToNode")
+  webhookEndpoint   WebhookEndpoint?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -166,6 +203,14 @@ enum ExecutionStatus {
   RUNNING
   SUCCESS
   FAILED
+  CANCELLED
+  WAITING
+}
+
+enum ExecutionStepStatus {
+  SUCCESS
+  FAILED
+  SKIPPED
 }
 
 model Execution {
@@ -180,8 +225,58 @@ model Execution {
 
   startedAt   DateTime  @default(now())
   completedAt DateTime?
+  triggerType String?
+  waitTill    DateTime?
 
   inngestEventId String @unique
 
-  output Json?
+  retryOf         String?
+  retrySuccessId  String?
+  parentExecutionId String?
+
+  output          Json?
+  workflowSnapshot Json?
+
+  steps ExecutionStep[]
+}
+
+model ExecutionStep {
+  id          String              @id @default(cuid())
+  executionId String
+  execution   Execution           @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  nodeId   String?
+  nodeName String
+  nodeType String
+
+  status    ExecutionStepStatus @default(SUCCESS)
+  order     Int                 @default(0)
+
+  input   Json?
+  output  Json?
+  error   String? @db.Text
+  errorStack String? @db.Text
+
+  startedAt   DateTime
+  completedAt DateTime?
+  durationMs  Int?
+  attempt     Int     @default(1)
+
+  @@unique([executionId, nodeId])
+  @@index([executionId, order])
+  @@map("execution_step")
+}
+
+model WebhookEndpoint {
+  id         String @id @default(cuid())
+  workflowId String
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  nodeId     String     @unique
+  node       Node     @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  secret     String   @unique
+  enabled    Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("webhook_endpoint")
 }
