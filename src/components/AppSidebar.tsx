@@ -1,12 +1,11 @@
 "use client";
 
 import {
-  CreditCardIcon,
   FolderOpenIcon,
   HistoryIcon,
   KeyIcon,
+  LayoutDashboardIcon,
   LogOutIcon,
-  StarIcon,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,19 +28,24 @@ const menuItems = [
     title: "Main",
     items: [
       {
+        title: "Dashboard",
+        icon: LayoutDashboardIcon,
+        url: "/",
+      },
+      {
         title: "Workflows",
         icon: FolderOpenIcon,
         url: "/workflows",
       },
       {
-        title: "Credentials",
-        icon: KeyIcon,
-        url: "/credentials",
-      },
-      {
         title: "Executions",
         icon: HistoryIcon,
         url: "/executions",
+      },
+      {
+        title: "Credentials",
+        icon: KeyIcon,
+        url: "/credentials",
       },
     ],
   },
@@ -99,26 +103,6 @@ export const AppSidebar = () => {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip="Upgade to Pro"
-              className="gap-x-4 h-10 px-4"
-              onClick={() => {}}
-            >
-              <StarIcon className="h-4 w-4" />
-              <span>Upgrade to Pro</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              tooltip="Billing Portal"
-              className="gap-x-4 h-10 px-4"
-              onClick={() => {}}
-            >
-              <CreditCardIcon className="h-4 w-4" />
-              <span>Billing Portal</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Sign out"
