@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -44,38 +43,6 @@ export function LoginForm() {
     },
   });
 
-  const signInGithub = async () => {
-    await authClient.signIn.social(
-      {
-        provider: "github",
-      },
-      {
-        onSuccess: () => {
-          router.push("/");
-        },
-        onError: () => {
-          toast.error("Something went wrong");
-        },
-      },
-    );
-  };
-
-  const signInGoogle = async () => {
-    await authClient.signIn.social(
-      {
-        provider: "google",
-      },
-      {
-        onSuccess: () => {
-          router.push("/");
-        },
-        onError: () => {
-          toast.error("Something went wrong");
-        },
-      },
-    );
-  };
-
   const onSubmit = async (values: LoginFormValues) => {
     await authClient.signIn.email(
       {
@@ -107,38 +74,6 @@ export function LoginForm() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="grid gap-6">
-                <div className="flex flex-col gap-4">
-                  <Button
-                    onClick={signInGithub}
-                    variant="outline"
-                    className="w-full"
-                    type="button"
-                    disabled={isPending}
-                  >
-                    <Image
-                      alt="GitHub"
-                      src="/logos/github.svg"
-                      width={20}
-                      height={20}
-                    />
-                    Continue with GitHub
-                  </Button>
-                  <Button
-                    onClick={signInGoogle}
-                    variant="outline"
-                    className="w-full"
-                    type="button"
-                    disabled={isPending}
-                  >
-                    <Image
-                      alt="Google"
-                      src="/logos/google.svg"
-                      width={20}
-                      height={20}
-                    />
-                    Continue with Google
-                  </Button>
-                </div>
                 <div className="grid gap-6">
                   <FormField
                     control={form.control}
